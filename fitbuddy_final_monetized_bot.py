@@ -107,7 +107,7 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(texts[lang]["reminder_promo"])
 
 # === Запуск бота ===
-app = ApplicationBuilder().token("7732210436:AAEpp7YiQnGMghdWar0PvHU_0fb2IF7Qf6Q").build()
+app = ApplicationBuilder().token("7518564092:AAGTkiI7I1Qoio9Qe6AfG5dNBzz_DOQejqI").build()
 
 app.add_handler(ConversationHandler(
     entry_points=[CommandHandler("start", start)],
