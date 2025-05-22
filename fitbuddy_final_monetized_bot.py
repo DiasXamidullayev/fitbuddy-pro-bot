@@ -5,6 +5,60 @@ from telegram.ext import (
 )
 LANGUAGE, CAL_W, CAL_H, CAL_A, CAL_G, CAL_Goal = range(6)
 user_names = {}  # username -> user_id
+texts = {
+    "en": {
+        "start": "👋 Welcome to FitBuddy! Choose your language:",
+        "menu": "Choose an action:",
+        "already_premium": "💎 You already have Premium access.",
+        "premium_ad": "💎 *Premium Features Include:*\n\n"
+                      "• Smart workout reminders\n"
+                      "• Export progress to PDF\n"
+                      "• Unlimited weight history\n"
+                      "• Personalized calorie plans\n\n"
+                      "*To activate Premium:*\n"
+                      "🌍 ZoodPay: https://zoodpay.com/pay/fitbuddy-premium\n"
+                      "🇺🇿 Payme: 5614 6835 1617 4125 (Xamidullayev Dias)\n\n"
+                      "Send a screenshot after payment to unlock access.",
+        "not_premium": "🚫 This feature is available for Premium users only. Use /premium to upgrade.",
+        "cal_q1": "Enter your weight (kg):",
+        "cal_q2": "Now your height (cm):",
+        "cal_q3": "Your age:",
+        "cal_q4": "Gender (m/f):",
+        "cal_q5": "Goal? (gain / lose / maintain):",
+        "cal_result": "✅ Your daily calorie need: {cal} kcal",
+        "plan": "📆 Weekly Plan:\nMon - Cardio\nWed - Strength\nFri - Stretch + Core",
+        "progress": "✅ Weight saved!",
+        "recipe": "🍽️ Try: Oats + banana + peanut butter (~350 kcal)",
+        "checklist": "✅ Checklist today: Water? Workout?",
+        "reminder_promo": "⏰ Premium reminders help you stay consistent!\nUse /premium to unlock."
+    },
+    "ru": {
+        "start": "👋 Добро пожаловать в FitBuddy! Выберите язык:",
+        "menu": "Выберите действие:",
+        "already_premium": "💎 У вас уже есть Premium-доступ.",
+        "premium_ad": "💎 *Преимущества Premium:*\n\n"
+                      "• Умные напоминания о тренировках\n"
+                      "• Экспорт прогресса в PDF\n"
+                      "• Неограниченная история веса\n"
+                      "• Персонализированный план калорий\n\n"
+                      "*Как активировать Premium:*\n"
+                      "🌍 ZoodPay: https://zoodpay.com/pay/fitbuddy-premium\n"
+                      "🇺🇿 Payme: 5614 6835 1617 4125 (Xamidullayev Dias)\n\n"
+                      "После оплаты отправьте скриншот — мы откроем доступ.",
+        "not_premium": "🚫 Эта функция доступна только в Premium. Введите /premium для обновления.",
+        "cal_q1": "Введите ваш вес (кг):",
+        "cal_q2": "Теперь ваш рост (см):",
+        "cal_q3": "Возраст:",
+        "cal_q4": "Пол (м/ж):",
+        "cal_q5": "Цель? (набор / похудение / поддержание):",
+        "cal_result": "✅ Ваша дневная норма калорий: {cal} ккал",
+        "plan": "📆 План на неделю:\nПн - Кардио\nСр - Силовая\nПт - Растяжка + Кор",
+        "progress": "✅ Вес сохранён!",
+        "recipe": "🍽️ Попробуйте: овсянка + банан + арахис (~350 ккал)",
+        "checklist": "✅ Чеклист дня: Вода? Тренировка?",
+        "reminder_promo": "⏰ Умные напоминания помогают не пропускать тренировки!\nВведите /premium для доступа."
+    }
+}
 # === Старт и язык ===
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(texts["en"]["start"], reply_markup=lang_buttons)
