@@ -149,7 +149,7 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(texts[lang]["reminder_locked"])
 
 # === Launch bot
-app = ApplicationBuilder().token("YOUR_BOT_TOKEN_HERE").build()
+app = ApplicationBuilder().token("7711272697:AAFQbZVquMMEuMTR0bnuixGLA_KMGUWrvCo").build()
 
 app.add_handler(ConversationHandler(
     entry_points=[CommandHandler("start", start)],
