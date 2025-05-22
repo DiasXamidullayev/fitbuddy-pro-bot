@@ -152,7 +152,7 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⏳ More features coming soon...")
 
 # === Run ===
-app = ApplicationBuilder().token("7794866677:AAG5KaOGEVaVdcQdZiOEx6ft0WEZt3axfYY").build()
+app = ApplicationBuilder().token("7711272697:AAFQbZVquMMEuMTR0bnuixGLA_KMGUWrvCo").build()
 app.add_handler(ConversationHandler(
     entry_points=[CommandHandler("start", start)],
     states={LANGUAGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, set_lang)]},
