@@ -1,4 +1,5 @@
 ...
+from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 # === Старт и язык ===
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(texts["en"]["start"], reply_markup=lang_buttons)
