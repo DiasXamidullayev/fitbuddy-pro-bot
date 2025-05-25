@@ -217,7 +217,7 @@ async def cal_goal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 if __name__ == "__main__":
-    app = ApplicationBuilder().token("PASTE_YOUR_BOT_TOKEN").build()
+    app = ApplicationBuilder().token("8079877045:AAFW4YjWO9plFtC8FoV4_G_W1K_SgAlIwYw").build()
     lang_conv = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={LANGUAGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, set_lang)]},
