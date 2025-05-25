@@ -58,6 +58,21 @@ texts = {
         "checklist": "✅ Чеклист дня: Вода? Тренировка?",
         "reminder_promo": "⏰ Умные напоминания помогают не пропускать тренировки!\nВведите /premium для доступа."
     }
+    lang_buttons = ReplyKeyboardMarkup(
+    [[KeyboardButton("English"), KeyboardButton("Русский")]],
+    resize_keyboard=True
+)
+
+menus = {
+    "en": ReplyKeyboardMarkup(
+        [["🔥 Calories", "📆 Plan"], ["📈 Weight", "🍲 Recipes"], ["✅ Habits", "⏰ Reminders"], ["💎 Premium"]],
+        resize_keyboard=True
+    ),
+    "ru": ReplyKeyboardMarkup(
+        [["🔥 Калории", "📆 План"], ["📈 Вес", "🍲 Рецепты"], ["✅ Привычки", "⏰ Напоминание"], ["💎 Премиум"]],
+        resize_keyboard=True
+    )
+}
 }
 # === Старт и язык ===
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
