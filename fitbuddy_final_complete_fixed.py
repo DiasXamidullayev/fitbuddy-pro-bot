@@ -133,7 +133,7 @@ async def confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
             pass
 
 def main():
-    app = ApplicationBuilder().token("PASTE_YOUR_BOT_TOKEN").build()
+    app = ApplicationBuilder().token("8079877045:AAFW4YjWO9plFtC8FoV4_G_W1K_SgAlIwYw").build()
 
     app.add_handler(ConversationHandler(
         entry_points=[CommandHandler("start", start)],
