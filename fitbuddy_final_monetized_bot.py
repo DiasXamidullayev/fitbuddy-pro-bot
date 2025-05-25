@@ -47,7 +47,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return LANGUAGE
 
 if __name__ == "__main__":
-    app = ApplicationBuilder().token("PASTE_YOUR_BOT_TOKEN").build()
+    app = ApplicationBuilder().token("8079877045:AAFW4YjWO9plFtC8FoV4_G_W1K_SgAlIwYw").build()
     app.add_handler(CommandHandler("start", start))
     print("✅ FitBuddy bot is running...")
     app.run_polling()
