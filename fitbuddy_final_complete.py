@@ -23,7 +23,11 @@ texts = {
         "start": "👋 Welcome to FitBuddy! Choose your language:",
         "menu": "🏋️‍♂️ Main Menu — choose an action:",
         "already_premium": "💎 You already have Premium access.",
-        "premium_ad": "💎 *Premium Features Include:*
+        ""premium_ad": """💎 Premium Features Include:
+• Smart reminders
+• Export history
+• Personal plans
+• No ads"""
 
 "
                       "• Smart workout reminders
