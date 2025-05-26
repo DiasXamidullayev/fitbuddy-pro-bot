@@ -176,7 +176,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 # === ЗАПУСК ===
-app = ApplicationBuilder().token("8079877045:AAFW4YjWO9plFtC8FoV4_G_W1K_SgAlIwYw").build()
+app = ApplicationBuilder().token("8079877045:AAGsksKjDXs22kSu1nJOkY4J8F44Zij4N_s").build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("confirm", confirm))
