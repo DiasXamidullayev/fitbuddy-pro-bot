@@ -1,11 +1,11 @@
-from telegram import Update, ReplyKeyboardMarkup
+from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, MessageHandler, ConversationHandler,
     ContextTypes, filters
 )
 import datetime
 
-# === Состояния ===
+# Состояния
 WEIGHT, HEIGHT, AGE, GENDER, GOAL = range(5)
 PLAN_GOAL, PLAN_PLACE, PLAN_DAYS = range(10, 13)
 REMIND_TEXT = 20
@@ -14,41 +14,45 @@ CHECKLIST_RESPONSE = 40
 
 user_progress = {}
 user_checklist = {}
+premium_users = set()
 
-main_menu = ReplyKeyboardMarkup(
-    keyboard=[["🔥 Калории", "📋 План"], ["⏰ Напоминание", "📈 Вес"], ["🍽️ Рецепты", "✅ Привычки"]],
-    resize_keyboard=True
-)
+# Главное меню
+main_menu = ReplyKeyboardMarkup([
+    ["🔥 Калории", "📋 План"],
+    ["⚖️ Вес", "⏰ Напоминание"],
+    ["🍽️ Рецепты", "✅ Привычки"],
+    ["💎 Премиум"]
+], resize_keyboard=True)
 
-# === /start ===
+# /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "👋 Привет! Я FitBuddy – твой фитнес-помощник!\n"
-        "Выбери действие снизу ⬇️",
+        "👋 Привет! Я FitBuddy — твой фитнес-бот.\nВыбери действие:",
         reply_markup=main_menu
     )
 
-# === Обработка текста-кнопок ===
-async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text
-    if text == "🔥 Калории":
-        await update.message.reply_text("Введи вес (кг):")
-        return WEIGHT
-    elif text == "📋 План":
-        await update.message.reply_text("Цель? (похудение / масса / поддержание):")
-        return PLAN_GOAL
-    elif text == "⏰ Напоминание":
-        await update.message.reply_text("Что тебе напоминать?")
-        return REMIND_TEXT
-    elif text == "📈 Вес":
-        await update.message.reply_text("Введи текущий вес (кг):")
-        return PROGRESS_WEIGHT
-    elif text == "🍽️ Рецепты":
-        await update.message.reply_text("🥗 Омлет с овощами: 2 яйца, перец, помидор, зелень.")
-    elif text == "✅ Привычки":
-        user_checklist[update.effective_user.id] = {"вода": False, "тренировка": False}
-        await update.message.reply_text("Что ты выполнил? (вода / тренировка)")
-        return CHECKLIST_RESPONSE
+# Premium реклама
+async def premium(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    uid = str(update.effective_user.id)
+    if uid in premium_users:
+        await update.message.reply_text("✅ У тебя уже Premium-доступ.")
+    else:
+        await update.message.reply_text(
+            "💎 *Преимущества Premium:*\n"
+            "- Умные напоминания\n- Экспорт прогресса\n- Персональные планы\n\n"
+            "Оплата:\nPayme: 5614 6835 1617 4125\nZoodPay: https://zoodpay.com/pay/fitbuddy\n\n"
+            "После оплаты: /confirm @username",
+            parse_mode="Markdown"
+        )
+
+# /confirm
+async def confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.message.reply_text("Введите /confirm @username")
+        return
+    username = context.args[0].replace("@", "")
+    premium_users.add(username)
+    await update.message.reply_text(f"✅ Premium активирован для {username}")
 
 # === Калории ===
 async def get_weight(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -81,7 +85,7 @@ async def get_age(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
     g = update.message.text.lower()
     if g not in ['м', 'ж']:
-        await update.message.reply_text("Введи 'м' или 'ж'")
+        await update.message.reply_text("Введите 'м' или 'ж'")
         return GENDER
     context.user_data["gender"] = g
     await update.message.reply_text("Цель? (масса / похудение / поддержание):")
@@ -90,41 +94,22 @@ async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_goal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     goal = update.message.text.lower()
     if goal not in ['масса', 'похудение', 'поддержание']:
-        await update.message.reply_text("Выберите: масса, похудение, поддержание.")
+        await update.message.reply_text("Выберите: масса, похудение, поддержание")
         return GOAL
-
-    w = context.user_data["weight"]
-    h = context.user_data["height"]
-    a = context.user_data["age"]
-    g = context.user_data["gender"]
+    w, h, a, g = context.user_data["weight"], context.user_data["height"], context.user_data["age"], context.user_data["gender"]
     bmr = 10 * w + 6.25 * h - 5 * a + (5 if g == 'м' else -161)
-
-    if goal == "масса":
-        calories = bmr + 300
-    elif goal == "похудение":
-        calories = bmr - 300
-    else:
-        calories = bmr
-
-    await update.message.reply_text(f"Твоя суточная норма: {int(calories)} ккал.")
+    cal = bmr + 300 if goal == "масса" else bmr - 300 if goal == "похудение" else bmr
+    await update.message.reply_text(f"✅ Твоя норма: {int(cal)} ккал", reply_markup=main_menu)
     return ConversationHandler.END
 
 # === План ===
 async def plan_goal(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    goal = update.message.text.lower()
-    if goal not in ['похудение', 'масса', 'поддержание']:
-        await update.message.reply_text("Выбери: похудение, масса, поддержание.")
-        return PLAN_GOAL
-    context.user_data["goal"] = goal
+    context.user_data["goal"] = update.message.text.lower()
     await update.message.reply_text("Где тренируешься? (дом / зал):")
     return PLAN_PLACE
 
 async def plan_place(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    place = update.message.text.lower()
-    if place not in ['дом', 'зал']:
-        await update.message.reply_text("Выбери: дом или зал.")
-        return PLAN_PLACE
-    context.user_data["place"] = place
+    context.user_data["place"] = update.message.text.lower()
     await update.message.reply_text("Сколько тренировок в неделю?")
     return PLAN_DAYS
 
@@ -132,24 +117,18 @@ async def plan_days(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         days = int(update.message.text)
     except:
-        await update.message.reply_text("Введи число.")
+        await update.message.reply_text("Введите число.")
         return PLAN_DAYS
-
-    goal = context.user_data["goal"]
-    place = context.user_data["place"]
-    text = f"📋 План тренировок ({goal}, {place}, {days} дней):\n"
+    g = context.user_data["goal"]
+    p = context.user_data["place"]
+    plan = f"📋 План ({g}, {p}, {days} дней):\n"
     for i in range(1, days + 1):
-        content = "Кардио" if goal == "похудение" else "Силовая" if goal == "масса" else "Комбинированная"
-        text += f"День {i}: {content} ({place})\n"
-    await update.message.reply_text(text)
+        block = "Кардио" if g == "похудение" else "Силовая" if g == "масса" else "Фуллбоди"
+        plan += f"День {i}: {block} ({p})\n"
+    await update.message.reply_text(plan, reply_markup=main_menu)
     return ConversationHandler.END
 
-# === Прочие ===
-async def handle_remind(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text
-    await update.message.reply_text(f"Буду напоминать: '{text}' (в будущем).")
-    return ConversationHandler.END
-
+# === Вес ===
 async def save_progress(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         weight = float(update.message.text)
@@ -159,9 +138,16 @@ async def save_progress(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     date = datetime.date.today().isoformat()
     user_progress.setdefault(uid, []).append((date, weight))
-    await update.message.reply_text(f"✅ Записано: {weight} кг ({date})")
+    await update.message.reply_text(f"✅ Вес записан: {weight} кг ({date})", reply_markup=main_menu)
     return ConversationHandler.END
 
+# === Напоминания ===
+async def handle_remind(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+    await update.message.reply_text(f"⏰ Напоминание установлено (в будущем): {text}", reply_markup=main_menu)
+    return ConversationHandler.END
+
+# === Чеклист ===
 async def handle_checklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower()
     uid = update.effective_user.id
@@ -169,58 +155,90 @@ async def handle_checklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_checklist[uid] = {"вода": False, "тренировка": False}
     if text in user_checklist[uid]:
         user_checklist[uid][text] = True
-    cl = user_checklist[uid]
-    await update.message.reply_text(
-        f"Прогресс дня:\n💧 Вода: {'✅' if cl['вода'] else '❌'}\n🏋️‍♂️ Тренировка: {'✅' if cl['тренировка'] else '❌'}"
-    )
+    ch = user_checklist[uid]
+    await update.message.reply_text(f"💧 Вода: {'✅' if ch['вода'] else '❌'}\n🏋️‍♂️ Тренировка: {'✅' if ch['тренировка'] else '❌'}", reply_markup=main_menu)
     return ConversationHandler.END
 
+# === Recipes ===
+async def recipes(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🍽️ Овсянка + банан + орехи = 350 ккал", reply_markup=main_menu)
+
+# === Обработка кнопок ===
+async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+    if text == "🔥 Калории":
+        await update.message.reply_text("Введи вес (кг):")
+        return WEIGHT
+    elif text == "📋 План":
+        await update.message.reply_text("Цель? (похудение / масса / поддержание):")
+        return PLAN_GOAL
+    elif text == "⚖️ Вес":
+        await update.message.reply_text("Введи текущий вес (кг):")
+        return PROGRESS_WEIGHT
+    elif text == "⏰ Напоминание":
+        await update.message.reply_text("Что напоминать?")
+        return REMIND_TEXT
+    elif text == "🍽️ Рецепты":
+        return await recipes(update, context)
+    elif text == "✅ Привычки":
+        uid = update.effective_user.id
+        user_checklist[uid] = {"вода": False, "тренировка": False}
+        await update.message.reply_text("Напиши: вода / тренировка")
+        return CHECKLIST_RESPONSE
+    elif text == "💎 Премиум":
+        return await premium(update, context)
+
 # === Запуск ===
-app = ApplicationBuilder().token("8079877045:AAHFLk25YPLF4HRMXtcbehJVnwcXE6svFOM").build()
+app = ApplicationBuilder().token("8079877045:AAHY2DN0aI_zsDNLtt9D1kNP88rJ_SCgPXc").build()
 
 app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_buttons))
+app.add_handler(CommandHandler("confirm", confirm))
+app.add_handler(MessageHandler(filters.Regex("^(🔥 Калории|📋 План|⚖️ Вес|⏰ Напоминание|🍽️ Рецепты|✅ Привычки|💎 Премиум)$"), handle_buttons))
 
-# Все ветки
+# Calories
 app.add_handler(ConversationHandler(
     entry_points=[MessageHandler(filters.Regex("^🔥 Калории$"), handle_buttons)],
     states={
-        WEIGHT: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_weight)],
-        HEIGHT: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_height)],
-        AGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_age)],
-        GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_gender)],
-        GOAL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_goal)],
+        WEIGHT: [MessageHandler(filters.TEXT, get_weight)],
+        HEIGHT: [MessageHandler(filters.TEXT, get_height)],
+        AGE: [MessageHandler(filters.TEXT, get_age)],
+        GENDER: [MessageHandler(filters.TEXT, get_gender)],
+        GOAL: [MessageHandler(filters.TEXT, get_goal)],
     },
     fallbacks=[]
 ))
 
+# Plan
 app.add_handler(ConversationHandler(
     entry_points=[MessageHandler(filters.Regex("^📋 План$"), handle_buttons)],
     states={
-        PLAN_GOAL: [MessageHandler(filters.TEXT & ~filters.COMMAND, plan_goal)],
-        PLAN_PLACE: [MessageHandler(filters.TEXT & ~filters.COMMAND, plan_place)],
-        PLAN_DAYS: [MessageHandler(filters.TEXT & ~filters.COMMAND, plan_days)],
+        PLAN_GOAL: [MessageHandler(filters.TEXT, plan_goal)],
+        PLAN_PLACE: [MessageHandler(filters.TEXT, plan_place)],
+        PLAN_DAYS: [MessageHandler(filters.TEXT, plan_days)],
     },
     fallbacks=[]
 ))
 
+# Progress
+app.add_handler(ConversationHandler(
+    entry_points=[MessageHandler(filters.Regex("^⚖️ Вес$"), handle_buttons)],
+    states={PROGRESS_WEIGHT: [MessageHandler(filters.TEXT, save_progress)]},
+    fallbacks=[]
+))
+
+# Reminder
 app.add_handler(ConversationHandler(
     entry_points=[MessageHandler(filters.Regex("^⏰ Напоминание$"), handle_buttons)],
-    states={REMIND_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_remind)]},
+    states={REMIND_TEXT: [MessageHandler(filters.TEXT, handle_remind)]},
     fallbacks=[]
 ))
 
-app.add_handler(ConversationHandler(
-    entry_points=[MessageHandler(filters.Regex("^📈 Вес$"), handle_buttons)],
-    states={PROGRESS_WEIGHT: [MessageHandler(filters.TEXT & ~filters.COMMAND, save_progress)]},
-    fallbacks=[]
-))
-
+# Checklist
 app.add_handler(ConversationHandler(
     entry_points=[MessageHandler(filters.Regex("^✅ Привычки$"), handle_buttons)],
-    states={CHECKLIST_RESPONSE: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_checklist)]},
+    states={CHECKLIST_RESPONSE: [MessageHandler(filters.TEXT, handle_checklist)]},
     fallbacks=[]
 ))
 
-print("✅ Бот запущен.")
+print("✅ FitBuddy запущен")
 app.run_polling()
