@@ -176,7 +176,7 @@ async def handle_checklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 # === Запуск ===
-app = ApplicationBuilder().token("8079877045:AAGsksKjDXs22kSu1nJOkY4J8F44Zij4N_s").build()
+app = ApplicationBuilder().token("8079877045:AAHFLk25YPLF4HRMXtcbehJVnwcXE6svFOM").build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_buttons))
